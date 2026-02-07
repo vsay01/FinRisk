@@ -1,0 +1,28 @@
+
+# Android Studio project files
+.gradle/
+build/
+app/build/
+captures/
+.idea/
+.cxx/
+local.properties
+*.iml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Distribution files
+*.apk
+*.aab
+
+# Log files
+*.log
+
+# Dependency caching
+.m2/
+.npm/
+
+# google-services.json file
+google-services.json
