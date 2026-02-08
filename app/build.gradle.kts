@@ -62,6 +62,7 @@ dependencies {
 
     // Dependency Injection - Hilt
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 
     // JSON Processing
