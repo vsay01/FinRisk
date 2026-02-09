@@ -46,9 +46,8 @@ fun IncomeSlider(
 
         Slider(
             value = currentIncome,
-            onValueChange = onIncomeChange,
+            onValueChange = { onIncomeChange((it / 1000).toInt() * 1000f) }, // Round to nearest $1000
             valueRange = 20000f..200000f,
-            steps = 100,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -96,7 +95,7 @@ fun AgeSlider(
             value = currentAge.toFloat(),
             onValueChange = { onAgeChange(it.roundToInt()) },
             valueRange = 18f..65f,
-            steps = 47,
+            steps = 46, // 48 values (18-65) needs 46 intermediate steps
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -142,9 +141,8 @@ fun EngagementSlider(
 
         Slider(
             value = currentEngagement,
-            onValueChange = onEngagementChange,
+            onValueChange = { onEngagementChange((it * 100).toInt() / 100f) }, // Round to nearest 1%
             valueRange = 0f..1f,
-            steps = 20,
             modifier = Modifier.fillMaxWidth()
         )
 
