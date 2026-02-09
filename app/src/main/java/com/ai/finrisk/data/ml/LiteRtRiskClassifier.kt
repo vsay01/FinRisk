@@ -104,10 +104,11 @@ class LiteRtRiskClassifier @Inject constructor(
                 order(ByteOrder.nativeOrder())
             }
 
-            // Run inference and measure time
-            val startTime = System.currentTimeMillis()
+            // Run inference and measure time in microseconds (µs)
+            val startTime = System.nanoTime()
             currentInterpreter.run(inputBuffer, outputBuffer)
-            val inferenceTime = System.currentTimeMillis() - startTime
+            val inferenceTimeMicros = (System.nanoTime() - startTime) / 1_000 // Convert to µs
+            val inferenceTime = inferenceTimeMicros.coerceAtLeast(1L)
 
             // Extract probability from output
             outputBuffer.rewind()

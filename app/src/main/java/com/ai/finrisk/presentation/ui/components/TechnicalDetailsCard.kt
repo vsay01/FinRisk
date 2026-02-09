@@ -63,7 +63,7 @@ fun TechnicalDetailsCard(
                 )
 
                 Text(
-                    text = "Inference Time: ${inferenceTime}ms",
+                    text = "Inference Time (nanosecond): ${inferenceTime}ns",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
