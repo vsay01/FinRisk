@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.ai.finrisk.domain.model.RiskDecision
@@ -189,9 +188,9 @@ fun DecisionBadge(decision: RiskDecision) {
  */
 private class RiskResultPreviewProvider : PreviewParameterProvider<RiskResult?> {
     override val values = sequenceOf(
-        RiskResult(probability = 0.85f, decision = RiskDecision.APPROVED, inferenceTimeMs = 2),
-        RiskResult(probability = 0.55f, decision = RiskDecision.REVIEW, inferenceTimeMs = 3),
-        RiskResult(probability = 0.25f, decision = RiskDecision.REJECTED, inferenceTimeMs = 2),
+        RiskResult(probability = 0.85f, decision = RiskDecision.APPROVED, inferenceTimeMicros = 2),
+        RiskResult(probability = 0.55f, decision = RiskDecision.REVIEW, inferenceTimeMicros = 3),
+        RiskResult(probability = 0.25f, decision = RiskDecision.REJECTED, inferenceTimeMicros = 2),
         null // Loading state
     )
 }
@@ -204,7 +203,7 @@ private fun RiskResultCardApprovedPreview() {
             riskResult = RiskResult(
                 probability = 0.85f,
                 decision = RiskDecision.APPROVED,
-                inferenceTimeMs = 2
+                inferenceTimeMicros = 2
             ),
             isLoading = false
         )
@@ -219,7 +218,7 @@ private fun RiskResultCardReviewPreview() {
             riskResult = RiskResult(
                 probability = 0.55f,
                 decision = RiskDecision.REVIEW,
-                inferenceTimeMs = 3
+                inferenceTimeMicros = 3
             ),
             isLoading = false
         )
@@ -234,7 +233,7 @@ private fun RiskResultCardRejectedPreview() {
             riskResult = RiskResult(
                 probability = 0.25f,
                 decision = RiskDecision.REJECTED,
-                inferenceTimeMs = 2
+                inferenceTimeMicros = 2
             ),
             isLoading = false
         )

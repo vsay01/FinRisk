@@ -7,12 +7,12 @@ package com.ai.finrisk.domain.model
  *
  * @property probability Raw model output (0.0 to 1.0), representing approval likelihood
  * @property decision Business decision derived from probability thresholds
- * @property inferenceTimeMs Time taken for ML inference in milliseconds
+ * @property inferenceTimeMicros Time taken for ML inference in milliseconds
  */
 data class RiskResult(
     val probability: Float,
     val decision: RiskDecision,
-    val inferenceTimeMs: Long
+    val inferenceTimeMicros: Long
 ) {
     companion object {
         private const val APPROVAL_THRESHOLD = 0.7f
@@ -40,7 +40,7 @@ data class RiskResult(
             return RiskResult(
                 probability = clampedProbability,
                 decision = decision,
-                inferenceTimeMs = inferenceTimeMs
+                inferenceTimeMicros = inferenceTimeMs
             )
         }
     }
