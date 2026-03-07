@@ -19,9 +19,9 @@ import com.ai.finrisk.ui.theme.FinRiskTheme
 @Composable
 fun TechnicalDetailsCard(
     preprocessedFeatures: FloatArray?,
-    inferenceTime: Long?
+    inferenceTimeMicros: Long?
 ) {
-    if (preprocessedFeatures != null && inferenceTime != null) {
+    if (preprocessedFeatures != null && inferenceTimeMicros != null) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -63,7 +63,7 @@ fun TechnicalDetailsCard(
                 )
 
                 Text(
-                    text = "Inference Time (nanosecond): ${inferenceTime}ns",
+                    text = "Inference Time: ${inferenceTimeMicros}ms",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -81,7 +81,7 @@ private fun TechnicalDetailsCardPreview() {
     FinRiskTheme {
         TechnicalDetailsCard(
             preprocessedFeatures = floatArrayOf(0.2222f, 0.2553f, 0.6500f),
-            inferenceTime = 2L
+            inferenceTimeMicros = 2L
         )
     }
 }
@@ -92,7 +92,7 @@ private fun TechnicalDetailsCardHighValuesPreview() {
     FinRiskTheme {
         TechnicalDetailsCard(
             preprocessedFeatures = floatArrayOf(0.8889f, 0.7872f, 0.9500f),
-            inferenceTime = 1L
+            inferenceTimeMicros = 1L
         )
     }
 }

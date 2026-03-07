@@ -135,7 +135,7 @@ internal fun RiskAssessmentContent(
         // Technical Details
         TechnicalDetailsCard(
             preprocessedFeatures = uiState.preprocessedFeatures,
-            inferenceTime = uiState.inferenceTimeMs
+            inferenceTimeMicros = uiState.inferenceTimeMs
         )
     }
 }
