@@ -135,7 +135,7 @@ internal fun RiskAssessmentContent(
         // Technical Details
         TechnicalDetailsCard(
             preprocessedFeatures = uiState.preprocessedFeatures,
-            inferenceTimeMicros = uiState.inferenceTimeMs
+            inferenceTimeMicros = uiState.inferenceTimeMicros
         )
     }
 }
@@ -154,10 +154,10 @@ private fun RiskAssessmentScreenApprovedPreview() {
                 riskResult = RiskResult(
                     probability = 0.85f,
                     decision = RiskDecision.APPROVED,
-                    inferenceTimeMs = 2
+                    inferenceTimeMicros = 2
                 ),
                 preprocessedFeatures = floatArrayOf(0.5556f, 0.3617f, 0.8000f),
-                inferenceTimeMs = 2,
+                inferenceTimeMicros = 2,
                 isLoading = false
             ),
             onIncomeChange = {},
@@ -179,10 +179,10 @@ private fun RiskAssessmentScreenReviewPreview() {
                 riskResult = RiskResult(
                     probability = 0.55f,
                     decision = RiskDecision.REVIEW,
-                    inferenceTimeMs = 3
+                    inferenceTimeMicros = 3
                 ),
                 preprocessedFeatures = floatArrayOf(0.2222f, 0.2128f, 0.5000f),
-                inferenceTimeMs = 3,
+                inferenceTimeMicros = 3,
                 isLoading = false
             ),
             onIncomeChange = {},
@@ -204,10 +204,10 @@ private fun RiskAssessmentScreenRejectedPreview() {
                 riskResult = RiskResult(
                     probability = 0.18f,
                     decision = RiskDecision.REJECTED,
-                    inferenceTimeMs = 2
+                    inferenceTimeMicros = 2
                 ),
                 preprocessedFeatures = floatArrayOf(0.0556f, 0.0851f, 0.2000f),
-                inferenceTimeMs = 2,
+                inferenceTimeMicros = 2,
                 isLoading = false
             ),
             onIncomeChange = {},

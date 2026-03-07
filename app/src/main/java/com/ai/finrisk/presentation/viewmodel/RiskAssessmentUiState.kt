@@ -8,7 +8,7 @@ data class RiskAssessmentUiState(
     val appEngagement: Float = 0.5f,
     val riskResult: RiskResult? = null,
     val preprocessedFeatures: FloatArray? = null,
-    val inferenceTimeMs: Long? = null,
+    val inferenceTimeMicros: Long? = null,
     val isLoading: Boolean = false,
     val error: String? = null
 ) {
@@ -26,7 +26,7 @@ data class RiskAssessmentUiState(
             if (other.preprocessedFeatures == null) return false
             if (!preprocessedFeatures.contentEquals(other.preprocessedFeatures)) return false
         } else if (other.preprocessedFeatures != null) return false
-        if (inferenceTimeMs != other.inferenceTimeMs) return false
+        if (inferenceTimeMicros != other.inferenceTimeMicros) return false
         if (isLoading != other.isLoading) return false
         if (error != other.error) return false
 
@@ -39,7 +39,7 @@ data class RiskAssessmentUiState(
         result = 31 * result + appEngagement.hashCode()
         result = 31 * result + (riskResult?.hashCode() ?: 0)
         result = 31 * result + (preprocessedFeatures?.contentHashCode() ?: 0)
-        result = 31 * result + (inferenceTimeMs?.hashCode() ?: 0)
+        result = 31 * result + (inferenceTimeMicros?.hashCode() ?: 0)
         result = 31 * result + isLoading.hashCode()
         result = 31 * result + (error?.hashCode() ?: 0)
         return result

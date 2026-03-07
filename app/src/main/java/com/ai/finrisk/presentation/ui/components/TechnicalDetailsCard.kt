@@ -62,8 +62,15 @@ fun TechnicalDetailsCard(
                     fontFamily = FontFamily.Monospace
                 )
 
+                /**
+                 * Why not convert to milliseconds instead?
+                 * Sub-millisecond values display as "0ms" on fast devices.
+                 * A Pixel 8 runs FinRisk inference in 1-3µs -- that's "0ms" if we round.
+                 * Microseconds is the right unit for on-device inference timing.
+                 * The on-device ML often is measured in microseconds, not the seconds.
+                 */
                 Text(
-                    text = "Inference Time: ${inferenceTimeMicros}ms",
+                    text = "Inference Time: ${inferenceTimeMicros}µs",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary

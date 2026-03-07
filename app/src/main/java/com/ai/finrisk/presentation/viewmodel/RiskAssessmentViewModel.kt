@@ -96,7 +96,7 @@ class RiskAssessmentViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         riskResult = riskResult,
                         preprocessedFeatures = preprocessedFeatures,
-                        inferenceTimeMs = riskResult.inferenceTimeMs,
+                        inferenceTimeMicros = riskResult.inferenceTimeMicros,
                         isLoading = false
                     )
                 },
