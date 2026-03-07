@@ -70,9 +70,9 @@ fun IncomeSlider(
 }
 
 @Composable
-fun AgeSlider(
-    currentAge: Int,
-    onAgeChange: (Int) -> Unit
+fun DebtRatioSlider(
+    currentDebtRatio: Float,
+    onDebtRatioChange: (Float) -> Unit
 ) {
     Column {
         Row(
@@ -80,11 +80,11 @@ fun AgeSlider(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Age",
+                text = "Debt-to-Income Ratio",
                 style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "$currentAge years",
+                text = "${(currentDebtRatio * 100).roundToInt()}%",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -92,56 +92,8 @@ fun AgeSlider(
         }
 
         Slider(
-            value = currentAge.toFloat(),
-            onValueChange = { onAgeChange(it.roundToInt()) },
-            valueRange = 18f..65f,
-            steps = 46, // 48 values (18-65) needs 46 intermediate steps
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "18",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = "65",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun EngagementSlider(
-    currentEngagement: Float,
-    onEngagementChange: (Float) -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "App Engagement",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-                text = "${(currentEngagement * 100).roundToInt()}%",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        Slider(
-            value = currentEngagement,
-            onValueChange = { onEngagementChange((it * 100).toInt() / 100f) }, // Round to nearest 1%
+            value = currentDebtRatio,
+            onValueChange = { onDebtRatioChange((it * 100).toInt() / 100f) },
             valueRange = 0f..1f,
             modifier = Modifier.fillMaxWidth()
         )
@@ -150,16 +102,54 @@ fun EngagementSlider(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Text(text = "0%", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "43% (CFPB limit)", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "100%", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun CreditHistorySlider(
+    currentCreditHistory: Int,
+    onCreditHistoryChange: (Int) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                text = "Low",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Credit Score",
+                style = MaterialTheme.typography.bodyLarge
             )
             Text(
-                text = "High",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "$currentCreditHistory",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
             )
+        }
+
+        Slider(
+            value = currentCreditHistory.toFloat(),
+            onValueChange = { onCreditHistoryChange(it.roundToInt()) },
+            valueRange = 300f..850f,
+            steps = 54,  // 550 range / 10 = 55 positions, 54 intermediate steps
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "300 (Poor)", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = "850 (Excellent)", style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -182,13 +172,13 @@ private fun IncomeSliderPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun AgeSliderPreview() {
+private fun DebtRatioSliderPreview() {
     FinRiskTheme {
         Surface(modifier = Modifier.padding(16.dp)) {
-            var age by remember { mutableIntStateOf(35) }
-            AgeSlider(
-                currentAge = age,
-                onAgeChange = { age = it }
+            var debtRatio by remember { mutableFloatStateOf(0.35f) }
+            DebtRatioSlider(
+                currentDebtRatio = debtRatio,
+                onDebtRatioChange = { debtRatio = it }
             )
         }
     }
@@ -196,27 +186,41 @@ private fun AgeSliderPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun EngagementSliderPreview() {
+private fun CreditHistorySliderPreview() {
     FinRiskTheme {
         Surface(modifier = Modifier.padding(16.dp)) {
-            var engagement by remember { mutableFloatStateOf(0.65f) }
-            EngagementSlider(
-                currentEngagement = engagement,
-                onEngagementChange = { engagement = it }
+            var creditScore by remember { mutableIntStateOf(720) }
+            CreditHistorySlider(
+                currentCreditHistory = creditScore,
+                onCreditHistoryChange = { creditScore = it }
             )
         }
     }
 }
 
-@Preview(showBackground = true, name = "All Sliders")
+@Preview(showBackground = true)
 @Composable
 private fun AllSlidersPreview() {
     FinRiskTheme {
         Surface(modifier = Modifier.padding(16.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                IncomeSlider(currentIncome = 60000f, onIncomeChange = {})
-                AgeSlider(currentAge = 30, onAgeChange = {})
-                EngagementSlider(currentEngagement = 0.5f, onEngagementChange = {})
+            Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                var income by remember { mutableFloatStateOf(75000f) }
+                IncomeSlider(
+                    currentIncome = income,
+                    onIncomeChange = { income = it }
+                )
+
+                var debtRatio by remember { mutableFloatStateOf(0.35f) }
+                DebtRatioSlider(
+                    currentDebtRatio = debtRatio,
+                    onDebtRatioChange = { debtRatio = it }
+                )
+
+                var creditScore by remember { mutableIntStateOf(720) }
+                CreditHistorySlider(
+                    currentCreditHistory = creditScore,
+                    onCreditHistoryChange = { creditScore = it }
+                )
             }
         }
     }

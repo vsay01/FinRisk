@@ -25,8 +25,8 @@ interface RiskClassifier {
      *
      * @param features Normalized input features array of size 3:
      *   - [0] Income: normalized to 0-1 range (from $20K-$200K)
-     *   - [1] Age: normalized to 0-1 range (from 18-65 years)
-     *   - [2] App Engagement: already 0-1 (percentage)
+     *   - [1] Debt Ratio: already 0-1 (debt-to-income ratio, 0% to 100%)
+     *   - [2] Credit History: normalized to 0-1 range (from credit score 300-850)
      *
      * @return [Result.success] with [RiskResult] containing probability and decision,
      *         or [Result.failure] if inference fails

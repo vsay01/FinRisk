@@ -16,7 +16,7 @@ import javax.inject.Inject
  * Manages user input state and triggers ML inference when inputs change.
  *
  * ## Data Flow
- * 1. User adjusts slider → [updateIncome]/[updateAge]/[updateAppEngagement]
+ * 1. User adjusts slider → [updateIncome]/[updateDebtRatio]/[updateCreditHistory]
  * 2. Input values stored in [uiState]
  * 3. [performRiskAssessment] called automatically
  * 4. Features normalized and sent to [RiskClassifier]
@@ -25,8 +25,8 @@ import javax.inject.Inject
  * ## Preprocessing
  * Raw inputs are normalized to 0-1 range to match model training:
  * - Income: ($20K-$200K) → (0.0-1.0)
- * - Age: (18-65) → (0.0-1.0)
- * - Engagement: already 0-1
+ * - Debt Ratio: already 0-1 (percentage)
+ * - Credit History: (300-850) → (0.0-1.0)
  *
  * @param riskClassifier Injected ML classifier for inference
  */
@@ -52,21 +52,13 @@ class RiskAssessmentViewModel @Inject constructor(
         performRiskAssessment()
     }
 
-    /**
-     * Updates age and triggers reassessment.
-     * @param newAge Age in years (18 - 65)
-     */
-    fun updateAge(newAge: Int) {
-        _uiState.value = _uiState.value.copy(age = newAge)
+    fun updateDebtRatio(newDebtRatio: Float) {
+        _uiState.value = _uiState.value.copy(debtRatio = newDebtRatio)
         performRiskAssessment()
     }
 
-    /**
-     * Updates app engagement score and triggers reassessment.
-     * @param newEngagement Engagement percentage (0.0 - 1.0)
-     */
-    fun updateAppEngagement(newEngagement: Float) {
-        _uiState.value = _uiState.value.copy(appEngagement = newEngagement)
+    fun updateCreditHistory(newCreditHistory: Int) {
+        _uiState.value = _uiState.value.copy(creditHistory = newCreditHistory)
         performRiskAssessment()
     }
 
@@ -78,15 +70,22 @@ class RiskAssessmentViewModel @Inject constructor(
      */
     private fun performRiskAssessment() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-
             val currentState = _uiState.value
+
+            // Only show loading spinner on the first inference (no previous result).
+            // Subsequent inferences complete in microseconds -- showing a spinner
+            // causes visible flicker as the UI swaps between result and "Analyzing..."
+            val showLoading = currentState.riskResult == null
+            _uiState.value = currentState.copy(
+                isLoading = showLoading,
+                error = null
+            )
 
             // Normalize inputs to 0-1 range (must match training preprocessing)
             val preprocessedFeatures = floatArrayOf(
                 (currentState.income - INCOME_MIN) / (INCOME_MAX - INCOME_MIN),
-                (currentState.age - AGE_MIN) / (AGE_MAX - AGE_MIN),
-                currentState.appEngagement // Already 0-1
+                currentState.debtRatio,  // Already 0-1
+                (currentState.creditHistory - CREDIT_HISTORY_MIN) / (CREDIT_HISTORY_MAX - CREDIT_HISTORY_MIN)
             )
 
             val result = riskClassifier.assess(preprocessedFeatures)
@@ -119,7 +118,8 @@ class RiskAssessmentViewModel @Inject constructor(
         // Normalization constants (must match training data range)
         private const val INCOME_MIN = 20000f
         private const val INCOME_MAX = 200000f
-        private const val AGE_MIN = 18f
-        private const val AGE_MAX = 65f
+        private const val CREDIT_HISTORY_MIN = 300f
+        private const val CREDIT_HISTORY_MAX = 850f
+        // Debt ratio: 0.0-1.0, no constants needed (already normalized)
     }
 }
