@@ -132,7 +132,7 @@ class LiteRtRiskClassifier @Inject constructor(
         /** Model filename in assets folder */
         private const val MODEL_FILE = "finrisk_classifier.tflite"
 
-        /** Number of input features (income, age, engagement) */
+        /** Number of input features (income, debt_ratio, credit_history) */
         private const val INPUT_SIZE = 3
 
         /** Number of output values (probability) */

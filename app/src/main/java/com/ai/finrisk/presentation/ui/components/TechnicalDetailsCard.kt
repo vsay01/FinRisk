@@ -51,13 +51,13 @@ fun TechnicalDetailsCard(
                 )
 
                 Text(
-                    text = "  Age:        ${String.format("%.4f", preprocessedFeatures[1])}",
+                    text = "  Debt Ratio: ${String.format("%.4f", preprocessedFeatures[1])}",
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = FontFamily.Monospace
                 )
 
                 Text(
-                    text = "  Engagement: ${String.format("%.4f", preprocessedFeatures[2])}",
+                    text = "  Credit:     ${String.format("%.4f", preprocessedFeatures[2])}",
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = FontFamily.Monospace
                 )
