@@ -7,7 +7,7 @@ package com.ai.finrisk.domain.model
  *
  * @property probability Raw model output (0.0 to 1.0), representing approval likelihood
  * @property decision Business decision derived from probability thresholds
- * @property inferenceTimeMicros Time taken for ML inference in milliseconds
+ * @property inferenceTimeMicros Time taken for ML inference in microseconds
  */
 data class RiskResult(
     val probability: Float,
