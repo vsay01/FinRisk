@@ -27,10 +27,10 @@ data class RiskResult(
          * - < 40%: REJECTED
          *
          * @param probability Raw model output (will be clamped to 0-1 range)
-         * @param inferenceTimeMs Time taken for inference
+         * @param inferenceTimeMicros Time taken for inference
          * @return [RiskResult] with appropriate decision
          */
-        fun fromProbability(probability: Float, inferenceTimeMs: Long): RiskResult {
+        fun fromProbability(probability: Float, inferenceTimeMicros: Long): RiskResult {
             val clampedProbability = probability.coerceIn(0f, 1f)
             val decision = when {
                 clampedProbability >= APPROVAL_THRESHOLD -> RiskDecision.APPROVED
@@ -40,7 +40,7 @@ data class RiskResult(
             return RiskResult(
                 probability = clampedProbability,
                 decision = decision,
-                inferenceTimeMicros = inferenceTimeMs
+                inferenceTimeMicros = inferenceTimeMicros
             )
         }
     }
