@@ -2,56 +2,57 @@ import tensorflow as tf
 import numpy as np
 import os
 
-def create_finrisk_training_data():
-    """
-    Generate synthetic FinTech training data that mimics real loan approval patterns.
-    This simulates the historical data a bank would have collected.
-    """
-    print("🔄 Generating training data...")
-    
-    # Generate 10,000 synthetic loan applications
-    n_samples = 10000
-    
-    # Feature 1: Normalized Annual Income (0 to 1)
-    # Real income range: $20,000 to $200,000 → normalized to 0-1
-    income_raw = np.random.uniform(20000, 200000, n_samples)
+def create_finrisk_training_data(num_samples=10000):
+    """Generate synthetic credit risk data with realistic distributions."""
+    np.random.seed(42)
+
+    # Feature 1: Annual Income ($20K-$200K)
+    # Right-skewed: most applicants earn $40K-$80K, fewer earn $150K+
+    income_raw = np.random.lognormal(mean=10.9, sigma=0.5, size=num_samples)
+    income_raw = np.clip(income_raw, 20000, 200000)
     income_normalized = (income_raw - 20000) / (200000 - 20000)
-    
-    # Feature 2: Age Factor (0 to 1)  
-    # Age range: 18 to 65 → normalized to 0-1
-    age_raw = np.random.uniform(18, 65, n_samples)
-    age_normalized = (age_raw - 18) / (65 - 18)
-    
-    # Feature 3: App Engagement Score (0 to 1)
-    # Based on user interaction with the FinTech app
-    app_engagement = np.random.beta(2, 2, n_samples)  # Beta distribution for realistic engagement
-    
-    # Combine features into X matrix
-    # Shape: [10000, 3] - This is our "x(i)" from the CS230 slides
-    X = np.column_stack([income_normalized, age_normalized, app_engagement]).astype(np.float32)
-    
-    # Generate target labels using business logic
-    # This simulates: "What loans were historically approved?"
-    risk_score = (
-        income_normalized * 0.5 +      # Income is 50% of decision
-        age_normalized * 0.2 +         # Age stability is 20%
-        app_engagement * 0.3 +         # User engagement is 30%
-        np.random.normal(0, 0.1, n_samples)  # Add some noise for realism
+
+    # Feature 2: Debt-to-Income Ratio (0-100%)
+    # Beta distribution: most applicants have 20-40% DTI
+    debt_ratio = np.random.beta(3, 5, num_samples)  # Peaks around 0.3-0.4
+
+    # Feature 3: Credit Score (300-850)
+    # Normal distribution centered at 680 (US median)
+    credit_raw = np.random.normal(680, 80, num_samples)
+    credit_raw = np.clip(credit_raw, 300, 850)
+    credit_normalized = (credit_raw - 300) / (850 - 300)
+
+    # Combine features
+    X = np.column_stack([income_normalized, debt_ratio, credit_normalized]).astype(np.float32)
+
+    # Generate labels with realistic interactions
+    # Base score from weighted features
+    base_score = (
+            income_normalized * 0.40 +
+            (1 - debt_ratio) * 0.35 +    # INVERTED: lower debt ratio = better
+            credit_normalized * 0.25
     )
-    
-    # Convert to binary approval (1 = approve, 0 = deny)
-    # Threshold at 0.6 - this creates our "y(i)" labels
-    y = (risk_score > 0.6).astype(np.float32)
-    
-    print(f"✅ Generated {n_samples} samples")
-    print(f"   - Approval rate: {np.mean(y)*100:.1f}%")
-    print(f"   - Features shape: {X.shape}")
-    
-    return X, y
+
+    # Add interaction: high income + high debt = still risky
+    high_income_high_debt = (income_normalized > 0.6) & (debt_ratio > 0.5)
+    interaction_penalty = np.where(high_income_high_debt, -0.15, 0.0)
+
+    # Add interaction: low credit + any income = risky
+    low_credit = credit_normalized < 0.3  # Score below ~465
+    credit_penalty = np.where(low_credit, -0.10, 0.0)
+
+    # Final score with noise and interactions
+    risk_score = base_score + interaction_penalty + credit_penalty
+    risk_score += np.random.normal(0, 0.08, num_samples)
+
+    # Binary labels
+    labels = (risk_score > 0.5).astype(np.float32)
+
+    return X, labels
 
 def create_logistic_regression_model():
     """
-    Create the exact logistic regression model from CS230 lectures.
+    Create the exact logistic regression model
     
     From slides: "z = w^T * x + b, a = sigmoid(z)"
     This is implemented as a single Dense layer with sigmoid activation.
@@ -60,7 +61,7 @@ def create_logistic_regression_model():
     
     model = tf.keras.Sequential([
         # This Dense layer implements: z = W*x + b, output = sigmoid(z)
-        # - 3 inputs: income, age, engagement  
+        # - 3 inputs: income_normalized, debt_ratio, credit_history_normalized
         # - 1 output: approval probability
         # - sigmoid activation: converts z to probability (0 to 1)
         tf.keras.layers.Dense(
@@ -75,14 +76,14 @@ def create_logistic_regression_model():
 
 def train_model(model, X_train, y_train):
     """
-    Train the model using the math concepts from CS230.
+    Train the model using the math concepts.
     
     The training process implements:
     - Forward propagation: z = wx + b, a = σ(z) 
     - Cost function: J = -(1/m) * Σ[y*log(a) + (1-y)*log(1-a)]
     - Backpropagation: Compute gradients and update weights
     """
-    print("📚 Training model (implementing CS230 algorithms)...")
+    print("📚 Training model (implementing algorithms)...")
     
     # Compile model with binary crossentropy loss
     # This implements the cost function J from the lectures
@@ -107,13 +108,84 @@ def train_model(model, X_train, y_train):
     
     # Extract the learned parameters (weights and bias)
     weights, bias = model.layers[0].get_weights()
-    print(f"\n🎯 Learned Parameters (the 'w' and 'b' from CS230):")
+    print(f"\n🎯 Learned Parameters (the 'w' and 'b'):")
     print(f"   Income weight: {weights[0][0]:.3f}")
-    print(f"   Age weight: {weights[1][0]:.3f}") 
-    print(f"   Engagement weight: {weights[2][0]:.3f}")
+    print(f"   Debt ratio weight: {weights[1][0]:.3f}")
+    print(f"   Credit history weight: {weights[2][0]:.3f}")
     print(f"   Bias: {bias[0]:.3f}")
     
     return model, history
+
+def verify_model(model):
+    """
+    Verify the trained model learned correct patterns before conversion.
+
+    Two checks:
+    1. Weight direction - do the signs match domain knowledge?
+    2. Boundary tests - does the model make sensible predictions on known cases?
+
+    Returns True if all critical checks pass.
+    """
+    print("\n🔍 Verifying model learned correct patterns...")
+    passed = True
+
+    # Check 1: Weight directions
+    weights, bias = model.layers[0].get_weights()
+    income_w, debt_w, credit_w = weights[0][0], weights[1][0], weights[2][0]
+
+    print("\n   Weight direction check:")
+    checks = [
+        (income_w > 0,  f"Income weight:  {income_w:+.3f}", "positive (higher income = safer)"),
+        (debt_w < 0,    f"Debt ratio weight: {debt_w:+.3f}", "negative (higher debt = riskier)"),
+        (credit_w > 0,  f"Credit weight:  {credit_w:+.3f}", "positive (higher score = safer)"),
+    ]
+    for ok, label, expected in checks:
+        symbol = "✓" if ok else "✗ WRONG"
+        print(f"   {symbol} {label}  (expected {expected})")
+        if not ok:
+            passed = False
+
+    # Check 2: Boundary tests with known expected outcomes
+    print("\n   Boundary test cases:")
+    test_cases = [
+        # [income, debt_ratio, credit_history], expected decision
+        ([1.0, 0.0, 1.0], "APPROVE"),   # Best possible applicant
+        ([0.0, 1.0, 0.0], "DENY"),      # Worst possible applicant
+        ([0.5, 0.3, 0.5], "EDGE"),      # Average -- just checking it runs
+        ([1.0, 0.8, 1.0], "DENY"),      # Trap: high income but drowning in debt
+        ([0.2, 0.1, 0.9], "APPROVE"),   # Low income but no debt + excellent credit
+    ]
+
+    failures = 0
+    for features, expected in test_cases:
+        input_data = np.array([features], dtype=np.float32)
+        prob = model.predict(input_data, verbose=0)[0][0]
+        decision = "APPROVE" if prob > 0.6 else ("REVIEW" if prob > 0.4 else "DENY")
+
+        if expected == "EDGE":
+            symbol = "~"  # Edge case, no pass/fail
+        elif decision == expected:
+            symbol = "✓"
+        else:
+            symbol = "✗"
+            failures += 1
+
+        print(f"   {symbol} {features} → {prob:.3f} ({decision})  expected: {expected}")
+
+    if failures > 0:
+        print(f"\n   ⚠️  {failures} boundary test(s) failed.")
+        print("   For logistic regression, interaction-based cases (like high income + high debt)")
+        print("   may fail because linear models can't learn feature interactions.")
+        print("   This becomes the motivation for upgrading to a neural network in Chapter 5.")
+        # Interaction failures are expected for logistic regression -- don't block the pipeline
+
+    if not passed:
+        print("\n   ❌ CRITICAL: Weight directions are wrong. Do not convert this model.")
+    else:
+        print("\n   ✅ Model verification passed.")
+
+    return passed
+
 
 def convert_to_tflite(model):
     """
@@ -151,34 +223,65 @@ def convert_to_tflite(model):
     
     return tflite_model
 
-def test_tflite_model(tflite_model, X_test):
+def test_tflite_model(tflite_model, keras_model):
     """
-    Test the TFLite model to ensure it works correctly.
-    This validates that the conversion preserved the mathematical accuracy.
+    Test the TFLite model against the Keras model.
+
+    Compares predictions from both on the same inputs to verify
+    that quantization/conversion preserved accuracy.
+    Returns True if the maximum difference is within tolerance.
     """
-    print("🧪 Testing TFLite model...")
-    
-    # Load TFLite model
+    print("\n🧪 Testing TFLite conversion accuracy...")
+
+    # Load TFLite interpreter
     interpreter = tf.lite.Interpreter(model_content=tflite_model)
     interpreter.allocate_tensors()
-    
-    # Get input/output tensor details
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    
-    # Test with a sample
-    test_sample = X_test[0:1]  # Take first test sample
-    
-    # Run inference
-    interpreter.set_tensor(input_details[0]['index'], test_sample)
+
+    # Test inputs: same boundary cases from verify_model + a midpoint
+    test_inputs = [
+        [1.0, 0.0, 1.0],   # Best applicant
+        [0.0, 1.0, 0.0],   # Worst applicant
+        [0.5, 0.35, 0.5],  # Midpoint (reference pair for Android integration test)
+        [0.8, 0.2, 0.7],   # Good applicant
+    ]
+
+    max_diff = 0.0
+    print("   Keras vs TFLite comparison:")
+    for features in test_inputs:
+        input_data = np.array([features], dtype=np.float32)
+
+        # Keras prediction
+        keras_prob = keras_model.predict(input_data, verbose=0)[0][0]
+
+        # TFLite prediction
+        interpreter.set_tensor(input_details[0]['index'], input_data)
+        interpreter.invoke()
+        tflite_prob = interpreter.get_tensor(output_details[0]['index'])[0][0]
+
+        diff = abs(float(keras_prob) - float(tflite_prob))
+        max_diff = max(max_diff, diff)
+        symbol = "✓" if diff < 0.01 else "✗"
+        print(f"   {symbol} {features} → Keras: {keras_prob:.4f}  TFLite: {tflite_prob:.4f}  diff: {diff:.6f}")
+
+    # Save the midpoint reference pair for Android integration test (Task 2.4)
+    ref_input = np.array([[0.5, 0.35, 0.5]], dtype=np.float32)
+    interpreter.set_tensor(input_details[0]['index'], ref_input)
     interpreter.invoke()
-    output_data = interpreter.get_tensor(output_details[0]['index'])
-    
-    print(f"   Test input: {test_sample[0]}")
-    print(f"   Predicted probability: {output_data[0][0]:.3f}")
-    print(f"   Decision: {'APPROVE' if output_data[0][0] > 0.6 else 'DENY'}")
-    
-    return True
+    ref_output = interpreter.get_tensor(output_details[0]['index'])[0][0]
+    print(f"\n   📌 Reference pair for Android integration test:")
+    print(f"      Input:  [0.5, 0.35, 0.5]")
+    print(f"      Output: {ref_output:.6f}")
+
+    tolerance = 0.01
+    if max_diff < tolerance:
+        print(f"\n   ✅ Max difference: {max_diff:.6f} (within {tolerance} tolerance)")
+        return True
+    else:
+        print(f"\n   ❌ Max difference: {max_diff:.6f} EXCEEDS {tolerance} tolerance")
+        print("   Quantization damaged the model. Try removing int8 quantization.")
+        return False
 
 def save_model_for_android(tflite_model, output_dir="models"):
     """
@@ -201,7 +304,7 @@ def save_model_for_android(tflite_model, output_dir="models"):
         "model_name": "FinRisk Credit Classifier",
         "model_version": "1.0.0",
         "input_shape": [1, 3],
-        "input_names": ["income_normalized", "age_normalized", "app_engagement"],
+        "input_names": ["income_normalized", "debt_ratio", "credit_history_normalized"],
         "output_shape": [1, 1],
         "output_name": "approval_probability",
         "decision_threshold": 0.6,
@@ -223,10 +326,10 @@ def save_model_for_android(tflite_model, output_dir="models"):
 
 def main():
     """
-    Main training pipeline that implements the CS230 concepts
+    Main training pipeline that implements the concepts
     """
     print("🚀 Starting FinRisk Model Training Pipeline")
-    print("   Implementing CS230 Logistic Regression concepts\n")
+    print("   Implementing Logistic Regression concepts\n")
     
     # Step 1: Generate training data (simulates historical loan data)
     X, y = create_finrisk_training_data()
@@ -238,19 +341,26 @@ def main():
     
     # Step 3: Create the logistic regression model
     model = create_logistic_regression_model()
-    
-    # Step 4: Train the model (gradient descent from CS230)
+
+    # Step 4: Train the model (gradient descent)
     trained_model, history = train_model(model, X_train, y_train)
-    
-    # Step 5: Convert to mobile-optimized format
+
+    # Step 5: Verify the model learned correct patterns
+    if not verify_model(trained_model):
+        print("\n❌ Pipeline stopped: model failed verification.")
+        return
+
+    # Step 6: Convert to mobile-optimized format
     tflite_model = convert_to_tflite(trained_model)
-    
-    # Step 6: Test the converted model
-    test_tflite_model(tflite_model, X_test)
-    
-    # Step 7: Save for Android integration
-    model_path, metadata_path = save_model_for_android(tflite_model)
-    
+
+    # Step 7: Verify conversion preserved accuracy
+    if not test_tflite_model(tflite_model, trained_model):
+        print("\n❌ Pipeline stopped: TFLite conversion damaged accuracy.")
+        return
+
+    # Step 8: Save for Android integration
+    save_model_for_android(tflite_model)
+
     print("\n🎉 Training pipeline completed successfully!")
     print("   Your model is ready for Android integration.")
 

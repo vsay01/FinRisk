@@ -21,7 +21,7 @@ import javax.inject.Singleton
  * Loads and runs the `finrisk_classifier.tflite` model from assets.
  *
  * ## Model Details
- * - Input: [1, 3] float tensor (income, age, engagement - all normalized 0-1)
+ * - Input: [1, 3] float tensor (income, debt_ratio, credit_history - all normalized 0-1)
  * - Output: [1, 1] float tensor (approval probability 0-1)
  * - Size: ~2KB (simple logistic regression)
  *
@@ -132,7 +132,7 @@ class LiteRtRiskClassifier @Inject constructor(
         /** Model filename in assets folder */
         private const val MODEL_FILE = "finrisk_classifier.tflite"
 
-        /** Number of input features (income, age, engagement) */
+        /** Number of input features (income, debt_ratio, credit_history) */
         private const val INPUT_SIZE = 3
 
         /** Number of output values (probability) */

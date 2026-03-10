@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ai.finrisk.domain.model.RiskDecision
 import com.ai.finrisk.domain.model.RiskResult
-import com.ai.finrisk.presentation.ui.components.AgeSlider
-import com.ai.finrisk.presentation.ui.components.EngagementSlider
+import com.ai.finrisk.presentation.ui.components.CreditHistorySlider
+import com.ai.finrisk.presentation.ui.components.DebtRatioSlider
 import com.ai.finrisk.presentation.ui.components.IncomeSlider
 import com.ai.finrisk.presentation.ui.components.RiskResultCard
 import com.ai.finrisk.presentation.ui.components.TechnicalDetailsCard
@@ -46,8 +46,8 @@ fun RiskAssessmentScreen(
         modifier = modifier,
         uiState = uiState,
         onIncomeChange = viewModel::updateIncome,
-        onAgeChange = viewModel::updateAge,
-        onEngagementChange = viewModel::updateAppEngagement
+        onDebtRatioChange = viewModel::updateDebtRatio,
+        onCreditHistoryChange = viewModel::updateCreditHistory
     )
 }
 
@@ -61,20 +61,20 @@ internal fun RiskAssessmentContent(
     modifier: Modifier = Modifier,
     uiState: RiskAssessmentUiState,
     onIncomeChange: (Float) -> Unit,
-    onAgeChange: (Int) -> Unit,
-    onEngagementChange: (Float) -> Unit
+    onDebtRatioChange: (Float) -> Unit,
+    onCreditHistoryChange: (Int) -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
         Text(
             text = "FinRisk Credit Assessment",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.fillMaxWidth()
         )
@@ -98,14 +98,14 @@ internal fun RiskAssessmentContent(
                     onIncomeChange = onIncomeChange
                 )
 
-                AgeSlider(
-                    currentAge = uiState.age,
-                    onAgeChange = onAgeChange
+                DebtRatioSlider(
+                    currentDebtRatio = uiState.debtRatio,
+                    onDebtRatioChange = onDebtRatioChange
                 )
 
-                EngagementSlider(
-                    currentEngagement = uiState.appEngagement,
-                    onEngagementChange = onEngagementChange
+                CreditHistorySlider(
+                    currentCreditHistory = uiState.creditHistory,
+                    onCreditHistoryChange = onCreditHistoryChange
                 )
             }
         }
@@ -135,13 +135,13 @@ internal fun RiskAssessmentContent(
         // Technical Details
         TechnicalDetailsCard(
             preprocessedFeatures = uiState.preprocessedFeatures,
-            inferenceTime = uiState.inferenceTimeMs
+            inferenceTimeMicros = uiState.inferenceTimeMicros
         )
     }
 }
 
 // region Previews
-
+// Approved preview: high income, low DTI, excellent credit
 @Preview(showBackground = true, showSystemUi = true, name = "Approved State")
 @Composable
 private fun RiskAssessmentScreenApprovedPreview() {
@@ -149,24 +149,25 @@ private fun RiskAssessmentScreenApprovedPreview() {
         RiskAssessmentContent(
             uiState = RiskAssessmentUiState(
                 income = 120000f,
-                age = 35,
-                appEngagement = 0.8f,
+                debtRatio = 0.20f,
+                creditHistory = 780,
                 riskResult = RiskResult(
                     probability = 0.85f,
                     decision = RiskDecision.APPROVED,
-                    inferenceTimeMs = 2
+                    inferenceTimeMicros = 2
                 ),
                 preprocessedFeatures = floatArrayOf(0.5556f, 0.3617f, 0.8000f),
-                inferenceTimeMs = 2,
+                inferenceTimeMicros = 2,
                 isLoading = false
             ),
             onIncomeChange = {},
-            onAgeChange = {},
-            onEngagementChange = {}
+            onDebtRatioChange = {},
+            onCreditHistoryChange = {}
         )
     }
 }
 
+// Review preview: moderate income, moderate DTI, fair credit
 @Preview(showBackground = true, showSystemUi = true, name = "Review State")
 @Composable
 private fun RiskAssessmentScreenReviewPreview() {
@@ -174,24 +175,25 @@ private fun RiskAssessmentScreenReviewPreview() {
         RiskAssessmentContent(
             uiState = RiskAssessmentUiState(
                 income = 60000f,
-                age = 28,
-                appEngagement = 0.5f,
+                debtRatio = 0.38f,
+                creditHistory = 660,
                 riskResult = RiskResult(
                     probability = 0.55f,
                     decision = RiskDecision.REVIEW,
-                    inferenceTimeMs = 3
+                    inferenceTimeMicros = 3
                 ),
                 preprocessedFeatures = floatArrayOf(0.2222f, 0.2128f, 0.5000f),
-                inferenceTimeMs = 3,
+                inferenceTimeMicros = 3,
                 isLoading = false
             ),
             onIncomeChange = {},
-            onAgeChange = {},
-            onEngagementChange = {}
+            onDebtRatioChange = {},
+            onCreditHistoryChange = {}
         )
     }
 }
 
+// Rejected preview: low income, high DTI, poor credit
 @Preview(showBackground = true, showSystemUi = true, name = "Rejected State")
 @Composable
 private fun RiskAssessmentScreenRejectedPreview() {
@@ -199,20 +201,20 @@ private fun RiskAssessmentScreenRejectedPreview() {
         RiskAssessmentContent(
             uiState = RiskAssessmentUiState(
                 income = 30000f,
-                age = 22,
-                appEngagement = 0.2f,
+                debtRatio = 0.55f,
+                creditHistory = 520,
                 riskResult = RiskResult(
                     probability = 0.18f,
                     decision = RiskDecision.REJECTED,
-                    inferenceTimeMs = 2
+                    inferenceTimeMicros = 2
                 ),
                 preprocessedFeatures = floatArrayOf(0.0556f, 0.0851f, 0.2000f),
-                inferenceTimeMs = 2,
+                inferenceTimeMicros = 2,
                 isLoading = false
             ),
             onIncomeChange = {},
-            onAgeChange = {},
-            onEngagementChange = {}
+            onDebtRatioChange = {},
+            onCreditHistoryChange = {}
         )
     }
 }
@@ -224,13 +226,13 @@ private fun RiskAssessmentScreenLoadingPreview() {
         RiskAssessmentContent(
             uiState = RiskAssessmentUiState(
                 income = 60000f,
-                age = 30,
-                appEngagement = 0.5f,
+                debtRatio = 0.55f,
+                creditHistory = 520,
                 isLoading = true
             ),
             onIncomeChange = {},
-            onAgeChange = {},
-            onEngagementChange = {}
+            onDebtRatioChange = {},
+            onCreditHistoryChange = {}
         )
     }
 }
@@ -242,14 +244,14 @@ private fun RiskAssessmentScreenErrorPreview() {
         RiskAssessmentContent(
             uiState = RiskAssessmentUiState(
                 income = 60000f,
-                age = 30,
-                appEngagement = 0.5f,
+                debtRatio = 0.55f,
+                creditHistory = 520,
                 isLoading = false,
                 error = "Failed to load ML model"
             ),
             onIncomeChange = {},
-            onAgeChange = {},
-            onEngagementChange = {}
+            onDebtRatioChange = {},
+            onCreditHistoryChange = {}
         )
     }
 }

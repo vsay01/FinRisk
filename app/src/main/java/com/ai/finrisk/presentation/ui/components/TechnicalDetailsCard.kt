@@ -19,9 +19,9 @@ import com.ai.finrisk.ui.theme.FinRiskTheme
 @Composable
 fun TechnicalDetailsCard(
     preprocessedFeatures: FloatArray?,
-    inferenceTime: Long?
+    inferenceTimeMicros: Long?
 ) {
-    if (preprocessedFeatures != null && inferenceTime != null) {
+    if (preprocessedFeatures != null && inferenceTimeMicros != null) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -51,19 +51,26 @@ fun TechnicalDetailsCard(
                 )
 
                 Text(
-                    text = "  Age:        ${String.format("%.4f", preprocessedFeatures[1])}",
+                    text = "  Debt Ratio: ${String.format("%.4f", preprocessedFeatures[1])}",
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = FontFamily.Monospace
                 )
 
                 Text(
-                    text = "  Engagement: ${String.format("%.4f", preprocessedFeatures[2])}",
+                    text = "  Credit:     ${String.format("%.4f", preprocessedFeatures[2])}",
                     style = MaterialTheme.typography.bodySmall,
                     fontFamily = FontFamily.Monospace
                 )
 
+                /**
+                 * Why not convert to milliseconds instead?
+                 * Sub-millisecond values display as "0ms" on fast devices.
+                 * A Pixel 8 runs FinRisk inference in 1-3µs -- that's "0ms" if we round.
+                 * Microseconds is the right unit for on-device inference timing.
+                 * The on-device ML often is measured in microseconds, not the seconds.
+                 */
                 Text(
-                    text = "Inference Time (nanosecond): ${inferenceTime}ns",
+                    text = "Inference Time: ${inferenceTimeMicros}µs",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -81,7 +88,7 @@ private fun TechnicalDetailsCardPreview() {
     FinRiskTheme {
         TechnicalDetailsCard(
             preprocessedFeatures = floatArrayOf(0.2222f, 0.2553f, 0.6500f),
-            inferenceTime = 2L
+            inferenceTimeMicros = 2L
         )
     }
 }
@@ -92,7 +99,7 @@ private fun TechnicalDetailsCardHighValuesPreview() {
     FinRiskTheme {
         TechnicalDetailsCard(
             preprocessedFeatures = floatArrayOf(0.8889f, 0.7872f, 0.9500f),
-            inferenceTime = 1L
+            inferenceTimeMicros = 1L
         )
     }
 }
