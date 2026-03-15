@@ -12,10 +12,24 @@
 #   public *;
 #}
 
+# ProGuard rules for FinRisk ML app
+
+# LiteRT / TensorFlow Lite — preserve JNI bridge classes
+# R8 can't see native C++ calls through JNI, so it strips
+# the Java wrappers thinking they're unused. This prevents
+# ClassNotFoundException in release builds.
+-keep class org.tensorflow.lite.** { *; }
+-keep class com.google.ai.edge.litert.** { *; }
+
+# Preserve native methods required for TFLite JNI inference
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# hide the original source file name. This is for meaningful crash stack traces
+-renamesourcefileattribute SourceFile
