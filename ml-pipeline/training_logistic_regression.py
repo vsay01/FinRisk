@@ -34,8 +34,9 @@ def create_finrisk_training_data(num_samples=10000):
     )
 
     # Add interaction: high income + high debt = still risky
-    high_income_high_debt = (income_normalized > 0.6) & (debt_ratio > 0.5)
-    interaction_penalty = np.where(high_income_high_debt, -0.15, 0.0)
+    # Same data as Chapter 5's neural network script — fair comparison
+    high_income_high_debt = (income_normalized > 0.5) & (debt_ratio > 0.4)
+    interaction_penalty = np.where(high_income_high_debt, -0.50, 0.0)
 
     # Add interaction: low credit + any income = risky
     low_credit = credit_normalized < 0.3  # Score below ~465
@@ -359,7 +360,7 @@ def main():
         return
 
     # Step 8: Save for Android integration
-    save_model_for_android(tflite_model)
+    # save_model_for_android(tflite_model)
 
     print("\n🎉 Training pipeline completed successfully!")
     print("   Your model is ready for Android integration.")
