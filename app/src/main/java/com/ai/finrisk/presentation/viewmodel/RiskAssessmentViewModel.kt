@@ -2,6 +2,7 @@ package com.ai.finrisk.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ai.finrisk.analytics.MlAnalytics
 import com.ai.finrisk.domain.classifier.RiskClassifier
 import com.ai.finrisk.domain.model.RiskResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +34,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RiskAssessmentViewModel @Inject constructor(
-    private val riskClassifier: RiskClassifier
+    private val riskClassifier: RiskClassifier,
+    private val mlAnalytics: MlAnalytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RiskAssessmentUiState())
@@ -93,6 +95,7 @@ class RiskAssessmentViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { riskResult ->
+                    mlAnalytics.trackInference(riskResult, preprocessedFeatures)
                     _uiState.value = _uiState.value.copy(
                         riskResult = riskResult,
                         preprocessedFeatures = preprocessedFeatures,
