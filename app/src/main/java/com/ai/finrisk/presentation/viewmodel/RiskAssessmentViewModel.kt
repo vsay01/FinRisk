@@ -3,6 +3,7 @@ package com.ai.finrisk.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ai.finrisk.domain.classifier.RiskClassifier
+import com.ai.finrisk.domain.model.RiskResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -99,10 +100,12 @@ class RiskAssessmentViewModel @Inject constructor(
                         isLoading = false
                     )
                 },
-                onFailure = { error ->
+                onFailure = {
+                    // Graceful degradation: show fallback instead of error
                     _uiState.value = _uiState.value.copy(
+                        riskResult = RiskResult.fallback(),
                         isLoading = false,
-                        error = error.message ?: "Unknown error"
+                        error = null
                     )
                 }
             )

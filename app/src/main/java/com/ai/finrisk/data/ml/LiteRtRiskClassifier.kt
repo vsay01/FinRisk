@@ -50,10 +50,12 @@ class LiteRtRiskClassifier @Inject constructor(
     /**
      * Loads the TFLite model from assets into memory.
      *
-     * @throws IllegalStateException if model file is missing or corrupted
+     * On failure, transitions to [ModelState.Failed] instead of throwing.
+     * This allows the app to continue running with degraded ML functionality
+     * rather than crashing at startup.
      */
     private fun loadModel() {
-        try {
+        modelState = try {
             val modelBuffer = loadModelFile()
             val options = Interpreter.Options().apply {
                 setNumThreads(2)

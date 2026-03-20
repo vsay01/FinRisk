@@ -19,7 +19,7 @@ An Android application that uses on-device machine learning to assess credit ris
 </p>
 
 <p align="center">
-  <em>Left: Approved (≥70%) | Center: Review (40-70%) | Right: Rejected (<40%)</em>
+  <em>Left: Approved (≥60%) | Center: Review (40-60%) | Right: Rejected (<40%)</em>
 </p>
 
 ## Architecture
@@ -133,7 +133,7 @@ ml-pipeline/                         # Model training (not part of APK)
 
 | Probability | Decision |
 |-------------|----------|
-| >= 70% | APPROVED |
+| >= 60% | APPROVED |
 | >= 40% | REVIEW |
 | < 40% | REJECTED |
 
