@@ -26,6 +26,8 @@ android {
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
+
+        buildConfigField("Boolean", "ML_ENABLED", "true")
     }
 
     buildTypes {
