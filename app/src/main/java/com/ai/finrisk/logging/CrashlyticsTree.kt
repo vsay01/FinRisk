@@ -20,7 +20,7 @@ import timber.log.Timber
  * Replace the body with Crashlytics calls after adding Firebase
  * to your project (see Chapter 6 for setup instructions).
  */
-class CrashlyticsTree : Timber.Tree() {
+open class CrashlyticsTree : Timber.Tree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         // Only forward errors and above to crash reporting
