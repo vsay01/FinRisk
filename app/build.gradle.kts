@@ -28,6 +28,8 @@ android {
         }
 
         buildConfigField("Boolean", "ML_ENABLED", "true")
+        buildConfigField("String", "MODEL_VERSION", "\"1.0.0\"")
+        buildConfigField("String", "MODEL_DATE", "\"2026-01-01\"")
     }
 
     buildTypes {
@@ -87,6 +89,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
