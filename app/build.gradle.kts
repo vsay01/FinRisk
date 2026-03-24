@@ -26,6 +26,10 @@ android {
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
+
+        buildConfigField("Boolean", "ML_ENABLED", "true")
+        buildConfigField("String", "MODEL_VERSION", "\"1.0.0\"")
+        buildConfigField("String", "MODEL_DATE", "\"2026-01-01\"")
     }
 
     buildTypes {
@@ -44,6 +48,7 @@ android {
     buildFeatures {
         compose = true
         mlModelBinding = true
+        buildConfig = true
     }
 }
 
@@ -84,6 +89,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

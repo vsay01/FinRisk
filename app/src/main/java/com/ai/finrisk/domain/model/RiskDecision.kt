@@ -4,8 +4,8 @@ package com.ai.finrisk.domain.model
  * Represents the outcome of a credit risk assessment.
  *
  * Business rules for decision thresholds:
- * - [APPROVED]: probability >= 0.7 (70%)
- * - [REVIEW]: probability >= 0.4 (40%) and < 0.7
+ * - [APPROVED]: probability >= 0.6 (60%)
+ * - [REVIEW]: probability >= 0.4 (40%) and < 0.6
  * - [REJECTED]: probability < 0.4 (40%)
  */
 enum class RiskDecision {

@@ -7,6 +7,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
+import timber.log.Timber
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -40,7 +41,7 @@ class LiteRtRiskClassifier @Inject constructor(
     @ApplicationContext private val context: Context
 ) : RiskClassifier {
 
-    private var interpreter: Interpreter? = null
+    private var modelState: ModelState = ModelState.Loading
 
     init {
         loadModel()
@@ -49,17 +50,20 @@ class LiteRtRiskClassifier @Inject constructor(
     /**
      * Loads the TFLite model from assets into memory.
      *
-     * @throws IllegalStateException if model file is missing or corrupted
+     * On failure, transitions to [ModelState.Failed] instead of throwing.
+     * This allows the app to continue running with degraded ML functionality
+     * rather than crashing at startup.
      */
     private fun loadModel() {
-        try {
+        modelState = try {
             val modelBuffer = loadModelFile()
             val options = Interpreter.Options().apply {
                 setNumThreads(2)
             }
-            interpreter = Interpreter(modelBuffer, options)
+            ModelState.Ready(Interpreter(modelBuffer, options))
         } catch (e: Exception) {
-            throw IllegalStateException("Failed to load ML model: ${e.message}", e)
+            Timber.e(e, "Failed to load ML model")
+            ModelState.Failed(e)
         }
     }
 
@@ -82,12 +86,29 @@ class LiteRtRiskClassifier @Inject constructor(
      * @return [Result.success] with [RiskResult], or [Result.failure] on error
      */
     override suspend fun assess(features: FloatArray): Result<RiskResult> = withContext(Dispatchers.Default) {
-        try {
-            val currentInterpreter = interpreter
-                ?: return@withContext Result.failure(IllegalStateException("Model not loaded"))
+        when (val state = modelState) {
+            is ModelState.Loading -> {
+                Result.failure(IllegalStateException("Model is still loading"))
+            }
+            is ModelState.Failed -> {
+                Result.failure(IllegalStateException("Model failed to load: ${state.error.message}", state.error))
+            }
+            is ModelState.Ready -> {
+                runInference(state.interpreter, features)
+            }
+        }
+    }
 
+    /**
+     * Executes inference on the loaded interpreter.
+     */
+    private fun runInference(
+        interpreter: Interpreter,
+        features: FloatArray
+    ): Result<RiskResult> {
+        try {
             if (features.size != INPUT_SIZE) {
-                return@withContext Result.failure(
+                return Result.failure(
                     IllegalArgumentException("Expected $INPUT_SIZE features, got ${features.size}")
                 )
             }
@@ -106,26 +127,30 @@ class LiteRtRiskClassifier @Inject constructor(
 
             // Run inference and measure time in microseconds (µs)
             val startTime = System.nanoTime()
-            currentInterpreter.run(inputBuffer, outputBuffer)
-            val inferenceTimeMicros = (System.nanoTime() - startTime) / 1_000 // Convert to µs
+            interpreter.run(inputBuffer, outputBuffer)
+            val inferenceTimeMicros = (System.nanoTime() - startTime) / 1_000
             val inferenceTime = inferenceTimeMicros.coerceAtLeast(1L)
 
             // Extract probability from output
             outputBuffer.rewind()
             val probability = outputBuffer.float.coerceIn(0f, 1f)
 
-            Result.success(RiskResult.fromProbability(probability, inferenceTime))
+            return Result.success(RiskResult.fromProbability(probability, inferenceTime))
         } catch (e: Exception) {
-            Result.failure(e)
+            return Result.failure(e)
         }
     }
 
     /**
      * Releases the TFLite interpreter and associated resources.
+     * Safe to call in any state — only releases if model was loaded.
      */
     override fun close() {
-        interpreter?.close()
-        interpreter = null
+        val state = modelState
+        if (state is ModelState.Ready) {
+            state.interpreter.close()
+        }
+        modelState = ModelState.Failed(IllegalStateException("Classifier closed"))
     }
 
     companion object {

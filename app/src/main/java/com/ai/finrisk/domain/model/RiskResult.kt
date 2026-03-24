@@ -15,14 +15,14 @@ data class RiskResult(
     val inferenceTimeMicros: Long
 ) {
     companion object {
-        private const val APPROVAL_THRESHOLD = 0.7f
+        private const val APPROVAL_THRESHOLD = 0.6f
         private const val REVIEW_THRESHOLD = 0.4f
 
         /**
          * Factory method to create [RiskResult] from raw model probability.
          *
          * Applies business rules to convert probability into [RiskDecision]:
-         * - >= 70%: APPROVED
+         * - >= 60%: APPROVED
          * - >= 40%: REVIEW
          * - < 40%: REJECTED
          *
@@ -43,5 +43,17 @@ data class RiskResult(
                 inferenceTimeMicros = inferenceTimeMicros
             )
         }
+
+        /**
+         * Returns a safe default result when the ML model is unavailable.
+         *
+         * Returns REVIEW (manual review required) rather than crashing
+         * the app or making a decision without ML confidence.
+         */
+        fun fallback(): RiskResult = RiskResult(
+            probability = 0.5f,
+            decision = RiskDecision.REVIEW,
+            inferenceTimeMicros = 0L
+        )
     }
 }

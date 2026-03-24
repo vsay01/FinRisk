@@ -122,7 +122,7 @@ fun RiskScoreGauge(score: Float) {
             // Score arc
             val sweepAngle = animatedScore * 270f
             val arcColor = when {
-                animatedScore >= 0.7f -> Color(0xFF4CAF50)
+                animatedScore >= 0.6f -> Color(0xFF4CAF50)
                 animatedScore >= 0.4f -> Color(0xFFFF9800)
                 else -> Color(0xFFF44336)
             }
